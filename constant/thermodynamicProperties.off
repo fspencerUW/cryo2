@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      thermodynamicProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         twoPhaseMixture;        // Change from pureMixture
+    transport       multiComponentMixture; // Change to multicomponent
+    thermo          hConst;                 // This can be left as is for simplicity, but a more accurate model would be better
+    equationOfState rhoIcoPolynomial;       // Change from rhoConst. This is a common choice for compressible fluids
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    phase1
+    {
+        name            liquid;
+        // The properties will be read from constant/physicalProperties.liquid
+    }
+
+    phase2
+    {
+        name            vapor;
+        // The properties will be read from constant/physicalProperties.vapor
+    }
+}

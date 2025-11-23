@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      physicalProperties.vapor;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       const;
+    thermo          eConst;
+    equationOfState rhoConst;
+    specie          specie;
+    energy          sensibleInternalEnergy;
+}
+
+mixture
+{
+    specie
+    {
+        molWeight   28.0134; // Molar mass of nitrogen (N2)
+    }
+    thermodynamics
+    {
+        //Cp          1040; // J/(kg·K) for N2 gas at ~300K
+        Cv             743;
+        hf          0;
+    }
+    transport
+    {
+        mu          1.84e-05; // Dynamic viscosity [kg/(m·s)]
+        Pr          0.7;
+    }
+    equationOfState
+    {
+        type        rhoConst;
+        rho         4.6;     // kg/m³ - nitrogen vapor density at low temperature/pressure
+    }
+}
+
+
+

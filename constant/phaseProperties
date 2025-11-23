@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      phaseProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+phases (liquid vapor air);
+
+sigmas
+(
+    (liquid vapor) 0.008      // LN₂–vapor interface
+    (liquid air)    0.072     // LN₂–air interface
+    (vapor air)     0.0         // negligible tension
+
+
+);
+
+
+
+
+
+
+// ************************************************************************* //
