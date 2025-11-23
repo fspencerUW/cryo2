@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+defaultFieldValues
+(
+    volScalarFieldValue alpha.liquid 0
+    volScalarFieldValue alpha.vapor 0
+    volScalarFieldValue alpha.air 1
+    volVectorFieldValue U (0 0 0)
+);
+
+regions
+(
+    // Set LN2 in upper portion of cylindrical pipe
+    // Cylinder: center (0,0), radius 0.0335m, from z=0.3 to z=0.57
+    cylinderToCell
+    {
+        point1 (0 0 0.575564);        // Top of pipe (full height) 
+        point2 (0 0 0.4572);       // (0 0 0.576) Bottom of LN2 region 
+        radius 0.02;           // Pipe radius
+        fieldValues
+        (
+            volScalarFieldValue alpha.liquid 1
+            volScalarFieldValue alpha.vapor 0  
+            volScalarFieldValue alpha.air 0
+            volVectorFieldValue U (0 0 0)     // starts at rest
+            volScalarFieldValue T 77          // LN2 temperature
+        );
+    }
+);
+
+// ************************************************************************* //

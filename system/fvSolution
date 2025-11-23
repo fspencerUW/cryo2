@@ -1,0 +1,249 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    "alpha.*"
+    {
+        nAlphaSubCycles 2;     // reduced from 4 for speed
+        cAlpha 0.5;
+        nAlphaCorr 1;
+        MULESCorr yes;
+        implicitPhasePressure false;
+    }
+
+    p_rgh
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-4;  // relaxed from 1e-5
+        relTol          0.1;   // relaxed from 0.05
+        minIter         1;
+        maxIter         30;    // reduced from 50
+    }
+
+    p_rghFinal
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-5;  // relaxed from 1e-6
+        relTol          0.05;  // relaxed from 0.01
+        minIter         1;
+        maxIter         30;    // reduced from 50
+    }
+
+    "(U|UFinal)"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-06;
+        relTol          0.01;
+        minIter         1;
+        maxIter         100;
+    }
+
+    k
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-8;
+        relTol          0.001;
+    }
+
+    kFinal
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-08;
+        relTol          0;
+        minIter         2;
+    }
+
+    epsilon
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-8;
+        relTol          0.001;
+    }
+
+    epsilonFinal
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-08;
+        relTol          0;
+        minIter         2;
+    }
+
+    omega
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       1e-8;
+        relTol          0.001;
+    }
+
+    omegaFinal
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-08;
+        relTol          0;
+        minIter         2;
+    }
+
+    T
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0.1;
+    }
+
+    TFinal
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0.0;
+    }
+
+    nut
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0.1;
+    }
+}
+
+PIMPLE
+{
+    momentumPredictor   no;
+    nOuterCorrectors    1;
+    nCorrectors         2;
+    nNonOrthogonalCorrectors 0;
+    
+    pRefCell            0;
+    pRefValue           0;
+    
+    consistent          no;
+    
+    // Additional stability controls
+    turbOnFinalIterOnly yes;
+    finalOnLastPIMPLEIterOnly yes;
+}
+
+relaxationFactors
+{
+    fields
+    {
+        p_rgh           0.1;
+        p_rghFinal      1.0;
+    }
+    equations
+    {
+        U               0.5;
+        UFinal          1.0;
+        "(k|omega)"     0.5;
+        "(k|omega)Final" 1.0;
+        T               0.7;
+        TFinal          1.0;
+        "alpha.*"       0.5;
+    }
+}
+
+
+/*
+PIMPLE
+{
+    momentumPredictor yes;
+
+    consistent 	yes;
+
+    nOuterCorrectors 1;	//1 - 2 - 20
+    nCorrectors     2;
+    nNonOrthogonalCorrectors 1;
+
+    pRefCell        0;
+    pRefValue       0;
+
+    //turbOnFinalIterOnly false;
+
+    outerCorrectorResidualControl
+    {
+        "(U|p_rgh)"
+        {
+            relTol          0.01;
+            tolerance       0.001;
+        }
+    }
+
+    // Alpha/MULES controls
+    nAlphaSubCycles  2;
+    nAlphaCorr       1;
+    MULESCorr        yes;
+
+}
+
+relaxationFactors
+{
+    fields
+    {
+        p_rgh   0.3;
+    }
+    equations
+    {
+        U       0.7;
+        "(k|omega)" 0.7;
+        "(T|alpha.*)" 0.7;
+    }
+}
+
+
+
+fluxTolerance   1e-8;
+
+/*  RANS
+SIMPLE
+{
+    nNonOrthogonalCorrectors 0;
+    consistent yes;
+}
+
+potentialFlow
+{
+    nNonOrthogonalCorrectors 10;
+}
+
+relaxationFactors
+{
+    equations
+    {
+        U               0.9;
+        k               0.5;
+        omega           0.5;
+    }
+}
+
+cache
+{
+    grad(U);
+}
+
+*/
+
+// ************************************************************************* //

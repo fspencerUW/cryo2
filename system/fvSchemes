@@ -1,0 +1,74 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{    
+    default         CrankNicolson 0.8;  // More stable than Euler
+}
+gradSchemes
+{
+    default          cellLimited Gauss linear 1;  //URANS
+    //grad(p)          cellLimited Gauss linear 0.5; //URANS
+
+    grad(p)         Gauss linear;
+    //grad(U)         cellLimited Gauss linear 1;
+}
+
+divSchemes
+{
+    div(rhoPhi,U)  Gauss upwind;
+    div(rhoPhi,k)  Gauss upwind;
+    div(rhoPhi,epsilon) Gauss upwind;
+    div(rhoPhi,omega) Gauss upwind;
+    div(phi,alpha)  Gauss vanLeer;
+    div(phirb,alpha) Gauss upwind;
+    div(phi,rho) Gauss upwind;
+    div(rhoPhi,T)  Gauss upwind;
+    div(rhoPhi,K)  Gauss upwind;
+    div(phi,p)      Gauss upwind;
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected; //RANS
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;  //RANS
+    //default         limited 1;  //URANS
+}
+
+
+fluxRequired
+{
+    phi;
+    rhoPhi;
+}
+
+
+wallDist
+{
+    method meshWave;
+}
+
+
+// ************************************************************************* //

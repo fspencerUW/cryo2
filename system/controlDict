@@ -1,0 +1,216 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     foamRun;
+
+solver          compressibleMultiphaseVoF;
+
+startFrom       latestTime;
+//startTime       0;
+
+stopAt          endTime;  // total simulation time [s]
+endTime         10;        // initial time step [s]
+
+deltaT          1e-3; // initial time step [s] - increased from 1e-2
+
+writeControl    adjustableRunTime;
+writeInterval   0.1;  // write every 0.5 seconds - less frequent writing
+
+purgeWrite      0;
+writeFormat     binary;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   8;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes;
+maxCo           0.3;  // increased from 0.05 for faster stepping
+maxDeltaT       1e-2;    // increased from 1e-3 for larger time steps
+maxAlphaCo      0.5;    // increased from 0.1 for faster interface evolution
+
+// Additional stability controls
+DDtScheme       CrankNicolson 0.8;
+
+
+// ************************************************************************* //
+
+
+functions
+{
+
+///////////////////////////////////////////////////////////////////////////
+
+minmaxdomain_scalar
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+
+    enabled         true;   //true or false
+    log             true;   //write to screen
+    
+    //writeControl    writeTime;
+    writeControl    timeStep;
+    writeInterval   1;
+
+    writeFields     false;  //write solution to field value - Not needed when only reporting value to screen
+
+    writeLocation   true;   //write location in the output file
+
+    //mode component;
+
+    select      all;
+
+    operation       none;
+
+    fields
+    (
+        p alpha.liquid alpha.vapor alpha.air k nut T rho
+    );
+}
+
+minmaxdomain_vector
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+
+    enabled         true;   //true or false
+    log             true;   //write to screen
+    
+    //writeControl    writeTime;
+    writeControl    timeStep;
+    writeInterval   1;
+
+    writeFields     false;  //write solution to field value - Not needed when only reporting value to screen
+
+    writeLocation   true;   //write location in the output file
+
+    //mode component;
+
+    select      all;
+
+    operation       none;
+
+    fields
+    (
+        U
+    );
+}
+
+indomain_scalar
+{
+    $minmaxdomain_scalar
+    operation       min;
+}
+
+mindomain_vector
+{
+    $minmaxdomain_vector
+    operation       minMag;
+}
+
+maxdomain_scalar
+{
+    $minmaxdomain_scalar
+    operation       max;
+}
+
+maxdomain_vector
+{
+    $minmaxdomain_vector
+    operation       maxMag;
+}
+
+  yplus_field
+    {
+        type yPlus;
+        libs ("libutilityFunctionObjects.so");
+
+        enabled false;
+        //log false;
+
+        writeControl outputTime;
+    }
+
+//Print y+ stats every iteration without saving the field
+
+    yplus_stats
+    {
+        type yPlus;
+        libs ("libutilityFunctionObjects.so");
+
+        enabled false;
+
+        writeControl timeStep;
+        writeInterval 1;
+
+//Leave object empty to not save the field
+//This will only print the yplus values every timestep and will not save the field
+        objects ();
+        log true;
+    }
+
+    outletVolumetricFlow
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        enabled         yes;
+        writeControl    timeStep;
+        writeInterval   1;
+        regionType      patch;
+        name            outlet;     // patch name
+        operation       sum;
+        fields          (phi);      // volumetric flux; sum(phi) gives m^3/s
+        writeFields     false;
+        log             true;
+    }
+
+    outletMassFlow
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        enabled         yes;
+        writeControl    timeStep;
+        writeInterval   1;
+        regionType      patch;
+        name            outlet;     // patch name
+        operation       sum;
+        fields          (rhoPhi);   // mass flux; sum(rhoPhi) gives kg/s
+        writeFields     false;
+        log             true;
+    }
+
+    wallHeatFlux1
+    {
+        type            wallHeatFlux;
+        libs            ("libfieldFunctionObjects.so");
+
+        // This solver does not create 'thermophysicalTransport' in the DB,
+        // so wallHeatFlux cannot execute. Disable to avoid runtime error.
+        enabled         no;
+        region          region0;           // default region, change if you have multiple
+
+        patches         (walls);           // replace "walls" with your wall patch name(s)
+
+        writeControl    timeStep;
+        writeInterval   1;                 // write every timestep (adjust as needed)
+
+        writeToFile     yes;
+        log             yes;
+        writePrecision  6;
+    }
+}
